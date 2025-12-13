@@ -60,3 +60,10 @@ def calibrate_mic():
         print("Calibrating microphone…")
         r.adjust_for_ambient_noise(source, duration=1)
         print("Mic ready.")
+
+def what_can_you_do():
+    return (
+        "I can open apps, control volume, take screenshots, "
+        "play YouTube videos, set timers, create files, "
+        "search Google, and answer general questions."
+    )
