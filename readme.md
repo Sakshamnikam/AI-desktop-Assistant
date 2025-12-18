@@ -101,15 +101,21 @@ Say **"bye"** or **"quit"** to exit.
 
 ---
 
-## 🗣️ Example Commands
+## 🗣️ Commands Pixel can Perform
 
 * "Open Chrome"
+* "Search Google for"
+* "Open Command Prompt"
 * "Increase volume"
 * "Take a screenshot"
 * "Set a timer for 10 minutes"
-* "Create file named notes on desktop"
-* "Play lo-fi music on YouTube"
-* "What is artificial intelligence?"
+* "Create file named (file name) on desktop"
+* "Play (Vidoe name) on YouTube"
+* "Close Current Window"
+* "Open Notepad"
+
+* Pixel can answer and General Knowledge questions
+For ex- What is artificial intelligence?"
 
 ---
 
