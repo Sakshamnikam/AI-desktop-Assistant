@@ -49,7 +49,7 @@ def run_assistant(log_callback=None):
     calibrate_mic()
 
     if log_callback:
-        log_callback("Pixel: Hi, I am Pixel!", typing=True)
+        log_callback("Pixel: Hi, I am Pixel!")
     speak("Hi, I am Pixel!")
 
     while assistant_running:
@@ -62,7 +62,7 @@ def run_assistant(log_callback=None):
 
         if "quit" in query or "bye" in query:
             if log_callback:
-                log_callback("Pixel: Goodbye!", typing=True)
+                log_callback("Pixel: Goodbye!")
             speak("Goodbye!")
             assistant_running = False
             break
@@ -70,9 +70,9 @@ def run_assistant(log_callback=None):
         response = handle_query(query)
 
         if log_callback:
-            log_callback(response, typing=True)  # <-- typing animation
-        speak(response)
+            log_callback(f"Pixel: {response}")
 
+        speak(response)
 
 
 # 🔹 GUI STOP BUTTON
