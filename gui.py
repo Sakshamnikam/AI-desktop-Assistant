@@ -27,7 +27,7 @@ def log_to_gui(message):
     chat_box.insert("end", message + "\n\n")
     chat_box.see("end")
     chat_box.configure(state="disabled")
-
+    
 # ---------------- BUTTON ACTIONS ----------------
 def start_assistant_gui():
     status_label.configure(text="Status: Listening", text_color="green")
