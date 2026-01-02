@@ -178,3 +178,7 @@ def google_search(query):
 def open_spotify():
     webbrowser.open("https://open.spotify.com")
     return "Opening Spotify in your browser"
+
+def open_linkedin():
+    webbrowser.open("https://www.linkedin.com/")
+    return "Opening LinkedIn in your browser"
