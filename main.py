@@ -40,7 +40,7 @@ def handle_query(q):
         return google_search(q)
     if "open spotify" in q or "start spotify" in q:
         return open_spotify()
-    if "open Linkedin" in q:
+    if "open LinkedIn" in q:
         return open_linkedin()
     return ask_ai(q)
 
