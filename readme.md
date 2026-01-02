@@ -113,7 +113,7 @@ Say **"bye"** or **"quit"** to exit.
 * "Play (Vidoe name) on YouTube"
 * "Close Current Window"
 * "Open Notepad"
-* "Open Spotify"
+
 
 * Pixel can answer any General Knowledge questions for ex- What is artificial intelligence?"
 
