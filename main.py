@@ -38,6 +38,8 @@ def handle_query(q):
         return create_file(q)
     if "google" in q:
         return google_search(q)
+    if "open spotify" in q or "start spotify" in q:
+        return open_spotify()
 
     return ask_ai(q)
 
