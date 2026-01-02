@@ -173,3 +173,8 @@ def google_search(query):
         return "What do you want me to search on Google?"
     webbrowser.open("https://www.google.com/search?q=" + urllib.parse.quote(text))
     return f"Searching Google for {text}"
+
+
+def open_spotify():
+    webbrowser.open("https://open.spotify.com")
+    return "Opening Spotify in your browser"
