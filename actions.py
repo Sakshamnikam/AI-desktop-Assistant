@@ -7,7 +7,9 @@ import subprocess
 import time
 import pywhatkit
 import threading
+import getpass
 from speechfunctions import speak
+import re
 
 
 # ------------------ SYSTEM ACTIONS ------------------
@@ -181,3 +183,53 @@ def open_spotify():
 def open_linkedin():
     webbrowser.open("https://www.linkedin.com/")
     return "Opening LinkedIn in your browser"
+
+
+def open_folder(query):
+    q = query.lower()
+
+    # ---------------- DRIVE HANDLING ----------------
+    drive_match = re.search(r"\b([a-z])\s*(drive)?\b", q)
+    if drive_match:
+        drive = drive_match.group(1).upper() + ":\\"
+        if os.path.exists(drive):
+            subprocess.Popen(f'explorer "{drive}"')
+            return f"Opening {drive} drive."
+        else:
+            return f"{drive} drive not found."
+
+    # ---------------- FOLDER SEARCH ----------------
+    clean_q = (
+        q.replace("open", "")
+         .replace("folder", "")
+         .replace("the", "")
+         .strip()
+    )
+
+    if not clean_q:
+        subprocess.Popen("explorer")
+        return "Opening File Explorer."
+
+    username = getpass.getuser()
+    search_paths = [
+        fr"C:\Users\{username}\Desktop",
+        fr"C:\Users\{username}\Documents",
+        fr"C:\Users\{username}\Downloads",
+    ]
+
+    matches = []
+
+    for base in search_paths:
+        for root, dirs, files in os.walk(base):
+            for d in dirs:
+                if clean_q in d.lower():
+                    matches.append(os.path.join(root, d))
+
+            if len(matches) >= 3:
+                break
+
+    if not matches:
+        return f"I couldn't find any folder named {clean_q}."
+
+    subprocess.Popen(f'explorer "{matches[0]}"')
+    return f"Opening {os.path.basename(matches[0])} folder."
