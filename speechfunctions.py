@@ -63,7 +63,7 @@ def calibrate_mic():
 
 def what_can_you_do():
     return (
-        "I can open apps, control volume, take screenshots, "
+        "I can open apps,close current open window, control volume, take screenshots, "
         "play YouTube videos, set timers, create files, "
         "search Google, and answer general questions."
     )
