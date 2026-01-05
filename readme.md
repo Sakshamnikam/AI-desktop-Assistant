@@ -45,7 +45,8 @@ You can say commands like:
 ```
 AI_desktop_Assistant/
 │
-├── main.py              # Entry point
+├── gui.py               # User interface
+├── main.py              # Entry point  
 ├── actions.py           # System & utility actions
 ├── aibrain.py           # AI logic using Groq API
 ├── speechfunctions.py   # Speech recognition & TTS
