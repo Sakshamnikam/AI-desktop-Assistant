@@ -70,7 +70,7 @@ AI_desktop_Assistant/
 Install all dependencies using:
 
 ```bash
-pip install speechrecognition pyttsx3 pyautogui python-dotenv groq pywhatkit pytube customtkinter
+pip install speechrecognition pyttsx3 pyautogui python-dotenv groq pywhatkit pytube customtkinter opencv-python
 ```
 
 ---
