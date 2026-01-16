@@ -65,5 +65,5 @@ def what_can_you_do():
     return (
         "I can open apps,close current open window, control volume, take screenshots, "
         "play YouTube videos, set timers, create files, "
-        "search Google, and answer general questions."
+        "search Google, Click photos  and answer general questions. and many more what do you want me to do?"
     )
