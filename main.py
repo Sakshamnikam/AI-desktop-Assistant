@@ -63,9 +63,14 @@ def handle_query(q):
     
     if "open" in q and ("folder" in q or "drive" in q):
         return open_folder(q)
+    
+    if "take a picture" in q or "take picture" in q or "take photo" in q or "click photo" in q:
+        return take_picture()
 
-   
-    # ✅ FALLBACK → GENERAL KNOWLEDGE / AI
+    if "open camera" in q or "turn on camera" in q or "start camera" in q:
+        return open_camera()
+    
+
     return ask_ai(q)
 
 
