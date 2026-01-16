@@ -10,6 +10,7 @@ import threading
 import getpass
 from speechfunctions import speak
 import re
+import cv2
 
 
 # ------------------ SYSTEM ACTIONS ------------------
@@ -233,3 +234,52 @@ def open_folder(query):
 
     subprocess.Popen(f'explorer "{matches[0]}"')
     return f"Opening {os.path.basename(matches[0])} folder."
+
+def _camera_loop():
+    cam = cv2.VideoCapture(0)
+
+    if not cam.isOpened():
+        return
+
+    cv2.namedWindow("Pixel Camera")
+
+    while True:
+        ret, frame = cam.read()
+        if not ret:
+            break
+
+        cv2.imshow("Pixel Camera", frame)
+
+        if cv2.waitKey(1) & 0xFF == ord('q'):
+            break
+
+    cam.release()
+    cv2.destroyAllWindows()
+
+
+def open_camera():
+    threading.Thread(target=_camera_loop, daemon=True).start()
+    return "Turning on camera."
+
+def take_picture():
+    cam = cv2.VideoCapture(0)
+
+    if not cam.isOpened():
+        return "Camera not detected."
+
+    ret, frame = cam.read()
+    cam.release()
+
+    if not ret:
+        return "Failed to capture image."
+
+    # Create Pictures folder if not exists
+    folder = "Pictures"
+    os.makedirs(folder, exist_ok=True)
+
+    filename = datetime.now().strftime("photo_%Y%m%d_%H%M%S.jpg")
+    path = os.path.join(folder, filename)
+
+    cv2.imwrite(path, frame)
+
+    return "Picture captured and saved successfully."
