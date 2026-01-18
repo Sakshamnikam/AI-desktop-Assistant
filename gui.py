@@ -152,7 +152,7 @@ def clear_chat():
 
 start_btn = ctk.CTkButton(
     btn_frame,
-    text="🎤 Start Listening",
+    text="🎤 Turn on mic",
     width=180,
     height=42,
     font=("Segoe UI", 14),
