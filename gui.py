@@ -9,29 +9,26 @@ ctk.set_default_color_theme("blue")
 
 app = ctk.CTk()
 app.title("Pixel AI Assistant")
-app.geometry("720x680")
+app.geometry("760x720")
 app.resizable(False, False)
 
-# ---------------- LOGO ----------------
-logo_image = ctk.CTkImage(
-    light_image=Image.open("pixel_logo.png"),
-    dark_image=Image.open("pixel_logo.png"),
-    size=(50, 50)
-)
-
 # ---------------- HEADER ----------------
-header = ctk.CTkFrame(app)
+header = ctk.CTkFrame(app, height=60)
 header.pack(fill="x", padx=10, pady=(10, 5))
 
-logo_label = ctk.CTkLabel(header, image=logo_image, text="")
-logo_label.pack(side="left", padx=(10, 6))
-
-title = ctk.CTkLabel(
-    header,
-    text="Pixel AI Desktop Assistant",
-    font=("Segoe UI", 22, "bold")
+logo = ctk.CTkImage(
+    light_image=Image.open("pixel_logo.png"),
+    dark_image=Image.open("pixel_logo.png"),
+    size=(42, 42)
 )
-title.pack(side="left")
+
+ctk.CTkLabel(header, image=logo, text="").pack(side="left", padx=10)
+
+ctk.CTkLabel(
+    header,
+    text="Pixel AI Assistant",
+    font=("Segoe UI", 22, "bold")
+).pack(side="left")
 
 status_label = ctk.CTkLabel(
     header,
@@ -39,149 +36,154 @@ status_label = ctk.CTkLabel(
     font=("Segoe UI", 14),
     text_color="orange"
 )
-status_label.pack(side="right", padx=10)
+status_label.pack(side="right", padx=15)
 
 # ---------------- CHAT AREA ----------------
-chat_container = ctk.CTkScrollableFrame(
+chat_frame = ctk.CTkScrollableFrame(
     app,
-    fg_color="#1E1E1E",
-    corner_radius=10
+    corner_radius=12,
+    fg_color="#1e1e1e"
 )
-chat_container.pack(fill="both", expand=True, padx=12, pady=8)
+chat_frame.pack(fill="both", expand=True, padx=12, pady=8)
 
 def add_message(text, sender="pixel"):
-    row = ctk.CTkFrame(chat_container, fg_color="transparent")
-    row.pack(fill="x", pady=6)
+    is_user = sender == "user"
+    is_code = (
+        "```" in text or
+        text.strip().startswith("<") or
+        len(text) > 300
+    )
 
-    if sender == "user":
-        bubble = ctk.CTkLabel(
+    row = ctk.CTkFrame(chat_frame, fg_color="transparent")
+    row.pack(fill="x", padx=10, pady=6)
+
+    if is_code:
+        bubble = ctk.CTkFrame(
             row,
-            text=text,
-            wraplength=420,
-            justify="left",
-            font=("Segoe UI", 14),
-            fg_color="#1F6AA5",
-            text_color="white",
-            corner_radius=18,
-            padx=14,
-            pady=10
+            fg_color="#2b2b2b",
+            corner_radius=16
         )
-        bubble.pack(anchor="e", padx=12)
+        bubble.pack(anchor="e" if is_user else "w")
+
+        preview_height = 140
+
+        textbox = ctk.CTkTextbox(
+            bubble,
+            width=520,
+            height=preview_height,
+            wrap="word",
+            font=("Consolas", 13),
+            fg_color="transparent",
+            border_width=0
+        )
+        textbox.insert("1.0", text)
+        textbox.configure(state="disabled")
+        textbox.pack(padx=12, pady=(10, 4))
+
+        def toggle():
+            if textbox.cget("height") == preview_height:
+                textbox.configure(height=300)
+                toggle_btn.configure(text="Collapse")
+            else:
+                textbox.configure(height=preview_height)
+                toggle_btn.configure(text="Expand")
+
+        toggle_btn = ctk.CTkButton(
+            bubble,
+            text="Expand",
+            width=80,
+            height=26,
+            font=("Segoe UI", 12),
+            fg_color="#3a3a3a",
+            hover_color="#4a4a4a",
+            command=toggle
+        )
+        toggle_btn.pack(anchor="e", padx=10, pady=(0, 8))
+
     else:
         bubble = ctk.CTkLabel(
             row,
             text=text,
-            wraplength=420,
+            wraplength=520,
             justify="left",
+            anchor="w",
             font=("Segoe UI", 14),
-            fg_color="#2C2C2C",
-            text_color="white",
-            corner_radius=18,
+            corner_radius=16,
             padx=14,
-            pady=10
+            pady=10,
+            fg_color="#1f6aa5" if is_user else "#2b2b2b"
         )
-        bubble.pack(anchor="w", padx=12)
-        
-    chat_container.update_idletasks()
-    chat_container._parent_canvas.yview_moveto(1.0)
-# Welcome message (IMPORTANT)
-add_message("Hi! I am Pixel 🤖\nHow can I help you today?", "pixel")
+        bubble.pack(anchor="e" if is_user else "w")
 
-# ---------------- TEXT INPUT ----------------
+    chat_frame.update_idletasks()
+    chat_frame._parent_canvas.yview_moveto(1.0)
+
+# Welcome
+add_message("Hi! I am Pixel 🤖\nHow can I help you today?")
+
+# ---------------- INPUT AREA ----------------
 input_frame = ctk.CTkFrame(app)
 input_frame.pack(fill="x", padx=12, pady=(6, 4))
 
-user_input = ctk.CTkEntry(
+user_entry = ctk.CTkEntry(
     input_frame,
-    placeholder_text="Type a message...",
+    placeholder_text="Type your message...",
     font=("Segoe UI", 14)
 )
-user_input.pack(side="left", fill="x", expand=True, padx=6)
+user_entry.pack(side="left", fill="x", expand=True, padx=(6, 8))
 
-def send_text():
-    query = user_input.get().strip()
+def send_message():
+    query = user_entry.get().strip()
     if not query:
         return
 
     add_message(query, "user")
-    user_input.delete(0, "end")
+    user_entry.delete(0, "end")
 
     status_label.configure(text="● Thinking", text_color="yellow")
-    app.update()
 
-    response = handle_query(query)
-    add_message(response, "pixel")
+    def process():
+        response = handle_query(query)
+        add_message(response, "pixel")
+        status_label.configure(text="● Idle", text_color="orange")
 
-    status_label.configure(text="● Idle", text_color="orange")
+    threading.Thread(target=process, daemon=True).start()
 
-user_input.bind("<Return>", lambda e: send_text())
+user_entry.bind("<Return>", lambda e: send_message())
 
-send_btn = ctk.CTkButton(
+ctk.CTkButton(
     input_frame,
     text="Send",
     width=90,
-    command=send_text
-)
-send_btn.pack(side="right", padx=6)
+    command=send_message
+).pack(side="right", padx=6)
 
-# ---------------- CONTROL BUTTONS ----------------
-btn_frame = ctk.CTkFrame(app)
-btn_frame.pack(pady=(6, 12))
+# ---------------- CONTROLS ----------------
+controls = ctk.CTkFrame(app)
+controls.pack(pady=(6, 12))
 
 def start_voice():
-    start_btn.configure(state="disabled")
     status_label.configure(text="● Listening", text_color="green")
-    add_message("Listening... Speak now.", "pixel")
+    add_message("🎤 Listening... Say 'Hey Pixel'")
 
     threading.Thread(
         target=run_assistant,
-        args=(lambda msg: add_message(msg.replace("Pixel: ", ""), "pixel"),),
+        args=(lambda msg: add_message(msg.replace("Pixel:", ""), "pixel"),),
         daemon=True
     ).start()
 
 def stop_voice():
     stop_assistant()
-    start_btn.configure(state="normal")
     status_label.configure(text="● Stopped", text_color="red")
-    add_message("Assistant stopped.", "pixel")
+    add_message("Assistant stopped.")
 
 def clear_chat():
-    for w in chat_container.winfo_children():
+    for w in chat_frame.winfo_children():
         w.destroy()
-    add_message("Chat cleared. How can I help?", "pixel")
+    add_message("Chat cleared. How can I help?")
 
-start_btn = ctk.CTkButton(
-    btn_frame,
-    text="🎤 Turn on mic",
-    width=180,
-    height=42,
-    font=("Segoe UI", 14),
-    command=start_voice
-)
-start_btn.grid(row=0, column=0, padx=8)
-
-stop_btn = ctk.CTkButton(
-    btn_frame,
-    text="⏹ Stop",
-    width=120,
-    height=42,
-    font=("Segoe UI", 14),
-    fg_color="#C0392B",
-    hover_color="#A93226",
-    command=stop_voice
-)
-stop_btn.grid(row=0, column=1, padx=8)
-
-clear_btn = ctk.CTkButton(
-    btn_frame,
-    text="🧹 Clear Chat",
-    width=140,
-    height=42,
-    font=("Segoe UI", 14),
-    fg_color="#5D6D7E",
-    hover_color="#566573",
-    command=clear_chat
-)
-clear_btn.grid(row=0, column=2, padx=8)
+ctk.CTkButton(controls, text="🎤 Start", width=160, command=start_voice).grid(row=0, column=0, padx=8)
+ctk.CTkButton(controls, text="⏹ Stop", width=120, fg_color="#c0392b", command=stop_voice).grid(row=0, column=1, padx=8)
+ctk.CTkButton(controls, text="🧹 Clear", width=140, fg_color="#566573", command=clear_chat).grid(row=0, column=2, padx=8)
 
 app.mainloop()
