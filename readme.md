@@ -120,6 +120,7 @@ Say **"bye"** or **"quit"** to exit.
 * "Open Spotify"
 * "Turn on Camera and Click photo"
 * Pixel can answer any General Knowledge questions for ex- What is artificial intelligence?"
+* Pixel can also write codes and also solve erros 
 
 ---
 
