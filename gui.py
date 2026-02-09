@@ -2,7 +2,19 @@ import customtkinter as ctk
 import threading
 from main import run_assistant, stop_assistant, handle_query
 from PIL import Image
+import os
+import sys
 
+
+def resource_path(relative_path):
+    try:
+        # PyInstaller creates a temp folder and stores files there
+        base_path = sys._MEIPASS
+    except Exception:
+        # Normal Python execution
+        base_path = os.path.abspath(".")
+
+    return os.path.join(base_path, relative_path)
 # ---------------- STATE ----------------
 assistant_listening = False
 
@@ -25,8 +37,8 @@ header = ctk.CTkFrame(app, height=52, fg_color="#0f1115")
 header.pack(fill="x")
 
 logo = ctk.CTkImage(
-    light_image=Image.open("pixel_logo.png"),
-    dark_image=Image.open("pixel_logo.png"),
+    light_image=Image.open(resource_path("pixel_logo.png")),
+    dark_image=Image.open(resource_path("pixel_logo.png")),
     size=(36, 36)
 )
 
