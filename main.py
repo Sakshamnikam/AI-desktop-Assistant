@@ -95,8 +95,9 @@ def run_assistant(log_callback=None):
 
     while assistant_running:
         query = listen()
-        if not query:
+        if not query or query == "__unrecognized__":
             continue
+
 
         query = query.lower()
 
