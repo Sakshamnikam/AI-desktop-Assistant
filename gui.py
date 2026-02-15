@@ -6,6 +6,13 @@ import os
 import sys
 
 
+glow_job = None
+glow_intensity = 0
+glow_direction = 1
+
+def set_status(text, color):
+    app.after(0, lambda: status_label.configure(text=text, text_color=color))
+
 def resource_path(relative_path):
     try:
         # PyInstaller creates a temp folder and stores files there
@@ -190,35 +197,137 @@ ctk.CTkButton(
     command=send_message
 ).pack(side="right")
 
-# ---------------- VOICE CONTROLS ----------------
-controls = ctk.CTkFrame(app, fg_color="#0f1115")
-controls.pack(fill="x", pady=(0, 10))
 
-def start_voice():
+# ---------------- VOICE FUNCTIONS ----------------
+def animate_glow():
+    global glow_job, glow_intensity, glow_direction
+
+    if not assistant_listening:
+        return
+
+    # Pulse intensity 0 → 255 → 0
+    glow_intensity += 15 * glow_direction
+
+    if glow_intensity >= 255:
+        glow_intensity = 255
+        glow_direction = -1
+    elif glow_intensity <= 60:
+        glow_intensity = 60
+        glow_direction = 1
+
+    # Convert intensity to hex color
+    green_value = glow_intensity
+    glow_color = f"#00{green_value:02x}00"
+
+    voice_btn.configure(border_color=glow_color)
+
+    glow_job = app.after(40, animate_glow)
+
+
+def toggle_voice():
     global assistant_listening
-    assistant_listening = True
-    set_status("● Listening", "green")
 
-    threading.Thread(
-        target=run_assistant,
-        args=(lambda msg: app.after(0, lambda: add_message(msg.replace("Pixel:", ""), "pixel")),),
-        daemon=True
-    ).start()
+    if not assistant_listening:
+        assistant_listening = True
 
-def stop_voice():
-    global assistant_listening
-    assistant_listening = False
-    stop_assistant()
-    set_status("● Stopped", "red")
-    add_message("Assistant stopped.")
+        voice_btn.configure(
+            text="⏹  Stop Listening",
+            fg_color="#dc2626",
+            hover_color="#b91c1c",
+            border_width=3
+        )
+
+        set_status("● Listening", "#22c55e")
+        animate_glow()
+
+        threading.Thread(
+            target=run_assistant,
+            args=(
+                lambda msg: app.after(
+                    0,
+                    lambda: add_message(msg.replace("Pixel:", ""), "pixel")
+                ),
+                lambda state, color: app.after(
+                    0,
+                    lambda: set_status(f"● {state}", color)
+                )
+            ),
+            daemon=True
+        ).start()
+
+    else:
+        assistant_listening = False
+        stop_assistant()
+
+        if glow_job:
+            app.after_cancel(glow_job)
+
+        voice_btn.configure(
+            text="🎤  Start Listening",
+            fg_color="#16a34a",
+            hover_color="#15803d",
+            border_width=1,
+            border_color="#2a2f3a"
+        )
+
+        set_status("● Idle", "#facc15")
+        add_message("Assistant stopped.")
+
 
 def clear_chat():
     for w in chat_frame.winfo_children():
         w.destroy()
     add_message("Chat cleared. How can I help?")
 
-ctk.CTkButton(controls, text="🎤 Start", width=120, command=start_voice).pack(side="left", padx=6)
-ctk.CTkButton(controls, text="⏹ Stop", width=100, fg_color="#dc2626", command=stop_voice).pack(side="left", padx=6)
-ctk.CTkButton(controls, text="🧹 Clear", width=110, fg_color="#334155", command=clear_chat).pack(side="left", padx=6)
+
+# ---------------- VOICE CONTROLS UI ----------------
+
+controls = ctk.CTkFrame(app, fg_color="transparent")
+controls.pack(fill="x", pady=(0, 18))
+
+button_container = ctk.CTkFrame(
+    controls,
+    fg_color="#161a20",
+    corner_radius=22
+)
+button_container.pack(pady=10)
+
+
+def style_button(btn):
+    btn.configure(
+        height=50,
+        corner_radius=22,
+        font=("Segoe UI Semibold", 15),
+        border_width=1,
+        border_color="#2a2f3a"
+    )
+
+
+# 🎤 TOGGLE BUTTON
+voice_btn = ctk.CTkButton(
+    button_container,
+    text="🎤  Start Listening",
+    width=220,
+    fg_color="#16a34a",
+    hover_color="#15803d",
+    command=toggle_voice
+)
+style_button(voice_btn)
+voice_btn.pack(side="left", padx=14, pady=14)
+
+
+# 🧹 CLEAR BUTTON
+clear_btn = ctk.CTkButton(
+    button_container,
+    text="🧹  Clear Chat",
+    width=160,
+    fg_color="#334155",
+    hover_color="#475569",
+    command=clear_chat
+)
+style_button(clear_btn)
+clear_btn.pack(side="left", padx=14)
+
+
 
 app.mainloop()
