@@ -133,10 +133,12 @@ def run_assistant(log_callback=None, status_callback=None):
 
         response = handle_query(query)
 
-        if log_callback:
-            log_callback(f"Pixel: {response}")
+        if response:
+            if log_callback:
+                log_callback(f"Pixel: {response}")
 
-        speak(response)
+            speak(response)
+
 
         if status_callback:
             status_callback("Listening", "#22c55e")

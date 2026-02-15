@@ -1,8 +1,10 @@
 import speech_recognition as sr
 import pyttsx3
+import threading
 
-# No global engine — we create a fresh one every time
-# Windows engine gets stuck after first run if reused
+
+engine = pyttsx3.init()
+engine.setProperty("rate", 185)
 
 
 # ---------------- SPEAK ---------------- #
@@ -14,13 +16,16 @@ def speak(text):
     print("Pixel:", text)
 
     try:
-        engine = pyttsx3.init()
-        engine.setProperty("rate", 175)
+        engine = pyttsx3.init(driverName='sapi5')
+        engine.setProperty("rate", 180)
+        engine.setProperty("volume", 1.0)
         engine.say(text)
         engine.runAndWait()
         engine.stop()
     except Exception as e:
-        print(f"[TTS ERROR] {e}")
+        print("TTS ERROR:", e)
+
+    threading.Thread(target=speak, daemon=True).start()
 
 
 # ---------------- LISTEN ---------------- #
@@ -33,7 +38,6 @@ def listen() -> str:
 
     with sr.Microphone() as source:
         print("Listening...")
-        r.adjust_for_ambient_noise(source, duration=1)
 
         try:
             audio = r.listen(source, timeout=None, phrase_time_limit=10)
