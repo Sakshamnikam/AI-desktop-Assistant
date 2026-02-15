@@ -83,7 +83,7 @@ def handle_query(q):
 
 
 # 🔹 GUI WILL CALL THIS
-def run_assistant(log_callback=None):
+def run_assistant(log_callback=None, status_callback=None):
     global assistant_running
     assistant_running = True
 
@@ -94,14 +94,21 @@ def run_assistant(log_callback=None):
         log_callback("Pixel is ready. Say 'Hey Pixel' to activate.")
 
     while assistant_running:
+
+        if status_callback:
+            status_callback("Listening", "#22c55e")
+
         query = listen()
+
         if not query or query == "__unrecognized__":
             continue
 
+        if status_callback:
+            status_callback("Recognizing", "#3b82f6")
 
         query = query.lower()
 
-        # 💤 SLEEP MODE
+        # 💤 Sleep Mode
         if not awake:
             if "hey pixel" in query:
                 awake = True
@@ -110,7 +117,7 @@ def run_assistant(log_callback=None):
                     log_callback("🟢 Wake word detected")
             continue
 
-        # 🛑 EXIT / SLEEP COMMAND
+        # 🛑 Exit
         if any(word in query for word in ["bye", "stop", "sleep", "exit"]):
             speak("Okay, going to sleep.")
             awake = False
@@ -118,9 +125,11 @@ def run_assistant(log_callback=None):
                 log_callback("🔴 Assistant sleeping")
             continue
 
-        # 🟢 NORMAL COMMAND MODE
         if log_callback:
             log_callback(f"You: {query}")
+
+        if status_callback:
+            status_callback("Thinking", "#facc15")
 
         response = handle_query(query)
 
@@ -128,6 +137,10 @@ def run_assistant(log_callback=None):
             log_callback(f"Pixel: {response}")
 
         speak(response)
+
+        if status_callback:
+            status_callback("Listening", "#22c55e")
+
 
 
 
