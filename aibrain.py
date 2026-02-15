@@ -4,7 +4,7 @@ from config import GROQ_API_KEY, conversation_history
 client = Groq(api_key=GROQ_API_KEY)
 
 MAX_CHARS = 8000
-MAX_HISTORY = 12
+MAX_HISTORY = 6
 
 def ask_ai(question):
     global conversation_history
@@ -53,8 +53,8 @@ def ask_ai(question):
                 )
             }
             ] + conversation_history,
-            max_tokens=800,
-            temperature=0.6
+            max_tokens=450,
+            temperature=0.5
         )
 
         message = response.choices[0].message.content.strip()
