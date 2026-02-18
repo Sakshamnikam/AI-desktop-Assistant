@@ -1,6 +1,7 @@
 from speechfunctions import listen, speak, calibrate_mic, what_can_you_do
 from actions import *
 from aibrain import ask_ai
+import threading
 
 # 🔹 REQUIRED FOR GUI CONTROL
 assistant_running = False
@@ -137,7 +138,12 @@ def run_assistant(log_callback=None, status_callback=None):
             if log_callback:
                 log_callback(f"Pixel: {response}")
 
-            speak(response)
+            # Speak in background thread
+            threading.Thread(
+                target=speak,
+                args=(response,),
+                daemon=True
+            ).start()
 
 
         if status_callback:
