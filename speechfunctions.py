@@ -1,6 +1,11 @@
 import speech_recognition as sr
 import pyttsx3
+import asyncio
+import edge_tts
+import pygame
 import threading
+import uuid
+import os
 
 
 engine = pyttsx3.init()
@@ -8,25 +13,49 @@ engine.setProperty("rate", 185)
 
 
 # ---------------- SPEAK ---------------- #
+pygame.mixer.init()
+
 def speak(text):
     text = str(text).strip()
     if not text:
         return
 
-    print("Pixel:", text)
+    def _worker():
+        try:
+            # Unique filename every time
+            file_name = f"tts_{uuid.uuid4().hex}.mp3"
 
-    try:
-        engine = pyttsx3.init(driverName='sapi5')
-        engine.setProperty("rate", 180)
-        engine.setProperty("volume", 1.0)
-        engine.say(text)
-        engine.runAndWait()
-        engine.stop()
-    except Exception as e:
-        print("TTS ERROR:", e)
+            loop = asyncio.new_event_loop()
+            asyncio.set_event_loop(loop)
 
-    threading.Thread(target=speak, daemon=True).start()
+            communicate = edge_tts.Communicate(
+                text,
+                voice="en-GB-RyanNeural"
+            )
 
+            loop.run_until_complete(
+                communicate.save(file_name)
+            )
+            loop.close()
+
+            # Stop previous playback
+            if pygame.mixer.music.get_busy():
+                pygame.mixer.music.stop()
+
+            pygame.mixer.music.load(file_name)
+            pygame.mixer.music.play()
+
+            # Cleanup after playback
+            while pygame.mixer.music.get_busy():
+                pygame.time.Clock().tick(10)
+
+            pygame.mixer.music.unload()
+            os.remove(file_name)
+
+        except Exception as e:
+            print("TTS ERROR:", e)
+
+    threading.Thread(target=_worker, daemon=True).start()
 
 # ---------------- LISTEN ---------------- #
 def listen() -> str:
