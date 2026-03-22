@@ -69,7 +69,7 @@ def listen() -> str:
         print("Listening...")
 
         try:
-            audio = r.listen(source, timeout=None, phrase_time_limit=10)
+            audio = r.listen(source, timeout=3, phrase_time_limit=8)
         except:
             return ""
 

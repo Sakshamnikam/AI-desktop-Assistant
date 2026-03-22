@@ -1,126 +1,155 @@
+
 from speechfunctions import listen, speak, calibrate_mic, what_can_you_do
 from actions import *
 from aibrain import ask_ai
 import threading
 
-# 🔹 REQUIRED FOR GUI CONTROL
+# ---------------- GLOBAL STATE ----------------
 assistant_running = False
 WAKE_WORD = "hey pixel"
 
 
+# ---------------- QUERY HANDLER ----------------
 def handle_query(q):
-    q = q.lower().strip()
+        
+        q = q.lower().strip()
 
-    # ----- CAPABILITIES -----
-    if "what can you do" in q or "what all can you do" in q :
-        return what_can_you_do()
+        # -------- NORMALIZE --------
+        q = q.replace("please", "").replace("could you", "").replace("can you", "").strip()
 
-    # ----- SYSTEM COMMANDS -----
-    if "open notepad" in q:
-        return open_notepad()
+        # -------- HELP --------
+        if any(p in q for p in ["what can you do", "your features", "help"]):
+            return what_can_you_do()
 
-    if "open chrome" in q:
-        return open_chrome()
+        # -------- APP LAUNCH --------
+        if any(p in q for p in ["open notepad", "start notepad", "launch notepad"]):
+            return open_notepad()
 
-    if "increase volume" in q:
-        return increase_volume()
+        if any(p in q for p in ["open chrome", "start chrome", "launch chrome", "open browser"]):
+            return open_chrome()
 
-    if "decrease volume" in q:
-        return decrease_volume()
+        if any(p in q for p in ["open cmd", "command prompt", "terminal"]):
+            return open_cmd()
 
-    if "mute" in q:
-        return mute()
+        # -------- VOLUME --------
+        if any(p in q for p in ["increase volume", "volume up", "raise volume"]):
+            return increase_volume()
 
-    if "screenshot" in q:
-        return take_screenshot()
+        if any(p in q for p in ["decrease volume", "volume down", "lower volume"]):
+            return decrease_volume()
 
-    if "open youtube" in q:
-        return open_youtube()
+        if any(p in q for p in ["mute", "silence"]):
+            return mute()
 
-    if "play" in q and "youtube" in q:
-        video = q.replace("play", "").replace("on youtube", "").strip()
-        return play_youtube_video(video)
+        # -------- SCREEN --------
+        if any(p in q for p in ["screenshot", "take screenshot", "capture screen"]):
+            return take_screenshot()
 
-    if "close window" in q or "close current window" in q:
-        return close_window()
+        # -------- YOUTUBE --------
+        if any(p in q for p in ["open youtube", "go to youtube"]):
+            return open_youtube()
 
-    if "open command prompt" in q or "open cmd" in q:
-        return open_cmd()
+        if "youtube" in q and any(p in q for p in ["play", "search", "watch"]):
+            video = (
+                q.replace("play", "")
+                .replace("search", "")
+                .replace("watch", "")
+                .replace("on youtube", "")
+                .replace("youtube", "")
+                .strip()
+            )
+            return play_youtube_video(video)
 
-    if "timer" in q:
-        return set_timer(q)
+        # -------- WINDOW CONTROL --------
+        if any(p in q for p in ["close window", "close this", "close current window"]):
+            return close_window()
 
-    create_keywords = [
-    "create file",
-    "make file",
-    "new file",
-    "create a file"
-]
-    if any(kw in q for kw in create_keywords):
-        return create_file(q)
+        # -------- TIMER --------
+        if any(p in q for p in ["timer", "set timer", "countdown"]):
+            return set_timer(q)
+
+        # -------- FILE --------
+        if any(p in q for p in ["create file", "make file", "new file", "create a file"]):
+            return create_file(q)
+
+        # -------- SEARCH --------
+        if q.startswith(("google ", "search ")) or "search for" in q:
+            return google_search(q)
+
+        # -------- WEB APPS --------
+        if any(p in q for p in ["open spotify", "start spotify"]):
+            return open_spotify()
+
+        if any(p in q for p in ["open linkedin", "linkedin"]):
+            return open_linkedin()
+
+        # -------- FILE SYSTEM --------
+        if "open" in q and any(p in q for p in ["folder", "drive", "directory"]):
+            return open_folder(q)
+
+        # -------- CAMERA --------
+        if any(p in q for p in ["take picture", "click photo", "capture photo"]):
+            return take_picture()
+
+        if any(p in q for p in ["open camera", "start camera", "turn on camera"]):
+            return open_camera()
+
+        # -------- FALLBACK AI --------
+        return ask_ai(q)
 
 
-    # 🔴 FIXED: Google search ONLY when user explicitly asks to search
-    if q.startswith(("google ", "search ")):
-        return google_search(q)
-
-    if "open spotify" in q or "start spotify" in q:
-        return open_spotify()
-
-    if "open linkedin" in q:
-        return open_linkedin()
-    
-    if "open" in q and ("folder" in q or "drive" in q):
-        return open_folder(q)
-    
-    if "take a picture" in q or "take picture" in q or "take a photo" in q or "click photo" in q:
-        return take_picture()
-
-    if "open camera" in q or "turn on camera" in q or "start camera" in q:
-        return open_camera()
-    
-
-    return ask_ai(q)
 
 
-# 🔹 GUI WILL CALL THIS
+# ---------------- MAIN ASSISTANT LOOP ----------------
 def run_assistant(log_callback=None, status_callback=None):
     global assistant_running
-    assistant_running = True
 
+    # Prevent multiple threads
+    if assistant_running:
+        return
+
+    assistant_running = True
     calibrate_mic()
+
     awake = False
 
     if log_callback:
-        log_callback("Pixel is ready. Say 'Hey Pixel' to activate.")
+        log_callback("Pixel is ready. Say 'Hey Pixel'.")
 
     while assistant_running:
 
+        # 🟢 Listening
         if status_callback:
             status_callback("Listening", "#22c55e")
 
         query = listen()
 
+        # 🔴 HARD STOP CHECK
+        if not assistant_running:
+            break
+
+        # Ignore noise / silence
         if not query or query == "__unrecognized__":
             continue
 
+        # 🔵 Recognizing
         if status_callback:
             status_callback("Recognizing", "#3b82f6")
 
-        query = query.lower()
+        query = query.lower().strip()
 
-        # 💤 Sleep Mode
+        # 💤 Wake word system
         if not awake:
-            if "hey pixel" in query:
+            if WAKE_WORD in query:
                 awake = True
                 speak("Yes, I am listening.")
                 if log_callback:
                     log_callback("🟢 Wake word detected")
             continue
 
-        # 🛑 Exit
+        # 🛑 Sleep commands
         if any(word in query for word in ["bye", "stop", "sleep", "exit"]):
-            speak("Okay, going to sleep.")
+            speak("Going to sleep.")
             awake = False
             if log_callback:
                 log_callback("🔴 Assistant sleeping")
@@ -129,6 +158,7 @@ def run_assistant(log_callback=None, status_callback=None):
         if log_callback:
             log_callback(f"You: {query}")
 
+        # 🟡 Thinking
         if status_callback:
             status_callback("Thinking", "#facc15")
 
@@ -138,22 +168,21 @@ def run_assistant(log_callback=None, status_callback=None):
             if log_callback:
                 log_callback(f"Pixel: {response}")
 
-            # Speak in background thread
+            # 🔊 Speak in background
             threading.Thread(
                 target=speak,
                 args=(response,),
                 daemon=True
             ).start()
 
+    # 🔴 Clean exit
+    assistant_running = False
 
-        if status_callback:
-            status_callback("Listening", "#22c55e")
+    if status_callback:
+        status_callback("Idle", "#facc15")
 
 
-
-
-
-# 🔹 GUI STOP BUTTON
+# ---------------- STOP FUNCTION ----------------
 def stop_assistant():
     global assistant_running
     assistant_running = False

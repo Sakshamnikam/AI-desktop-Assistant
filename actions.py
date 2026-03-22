@@ -27,13 +27,39 @@ def open_chrome():
         os.startfile("chrome")
     return "Opening Chrome."
 
-def increase_volume():
-    pyautogui.press("volumeup")
-    return "Increasing volume."
+def increase_volume(query=None):
+    steps = extract_volume_steps(query, default=5)
 
-def decrease_volume():
-    pyautogui.press("volumedown")
-    return "Decreasing volume."
+    for _ in range(steps):
+        pyautogui.press("volumeup")
+
+    return f"Increased volume by {steps} steps."
+
+
+def decrease_volume(query=None):
+    steps = extract_volume_steps(query, default=5)
+
+    for _ in range(steps):
+        pyautogui.press("volumedown")
+
+    return f"Decreased volume by {steps} steps."
+
+
+def extract_volume_steps(query, default=5):
+    if not query:
+        return default
+
+    numbers = re.findall(r'\d+', query)
+
+    if numbers:
+        steps = int(numbers[0])
+
+        # 🔒 Safety cap
+        return min(max(steps, 1), 50)
+
+    return default
+
+
 
 def mute():
     pyautogui.press("volumemute")
@@ -186,19 +212,43 @@ def open_linkedin():
 
 
 def open_folder(query):
+    import os
+    import subprocess
+    import getpass
+    import re
+
     q = query.lower()
+    username = getpass.getuser()
+
+    # ---------------- DIRECT FOLDER MAPPING ----------------
+    system_folders = {
+        "desktop": f"C:\\Users\\{username}\\Desktop",
+        "downloads": f"C:\\Users\\{username}\\Downloads",
+        "documents": f"C:\\Users\\{username}\\Documents",
+        "pictures": f"C:\\Users\\{username}\\Pictures",
+        "music": f"C:\\Users\\{username}\\Music",
+        "videos": f"C:\\Users\\{username}\\Videos",
+    }
+
+    for name, path in system_folders.items():
+        if name in q:
+            if os.path.exists(path):
+                subprocess.Popen(f'explorer "{path}"')
+                return f"Opening {name.capitalize()} folder."
+            else:
+                return f"{name.capitalize()} folder not found."
 
     # ---------------- DRIVE HANDLING ----------------
     drive_match = re.search(r"\b([a-z])\s*(drive)?\b", q)
     if drive_match:
-        drive = drive_match.group(1).upper() + ":\\"
+        drive = drive_match.group(1).upper() + ":\\" 
         if os.path.exists(drive):
             subprocess.Popen(f'explorer "{drive}"')
             return f"Opening {drive} drive."
         else:
             return f"{drive} drive not found."
 
-    # ---------------- FOLDER SEARCH ----------------
+    # ---------------- SEARCH FALLBACK ----------------
     clean_q = (
         q.replace("open", "")
          .replace("folder", "")
@@ -206,33 +256,29 @@ def open_folder(query):
          .strip()
     )
 
-    if not clean_q:
-        subprocess.Popen("explorer")
-        return "Opening File Explorer."
-
-    username = getpass.getuser()
     search_paths = [
-        fr"C:\Users\{username}\Desktop",
-        fr"C:\Users\{username}\Documents",
-        fr"C:\Users\{username}\Downloads",
+        f"C:\\Users\\{username}\\Desktop",
+        f"C:\\Users\\{username}\\Documents",
+        f"C:\\Users\\{username}\\Downloads",
     ]
 
     matches = []
 
     for base in search_paths:
-        for root, dirs, files in os.walk(base):
+        for root, dirs, _ in os.walk(base):
             for d in dirs:
                 if clean_q in d.lower():
                     matches.append(os.path.join(root, d))
-
             if len(matches) >= 3:
                 break
 
-    if not matches:
-        return f"I couldn't find any folder named {clean_q}."
+    if matches:
+        subprocess.Popen(f'explorer "{matches[0]}"')
+        return f"Opening {os.path.basename(matches[0])} folder."
 
-    subprocess.Popen(f'explorer "{matches[0]}"')
-    return f"Opening {os.path.basename(matches[0])} folder."
+    return f"I couldn't find any folder named {clean_q}."
+
+
 
 def _camera_loop():
     cam = cv2.VideoCapture(0)
