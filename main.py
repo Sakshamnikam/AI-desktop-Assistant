@@ -41,7 +41,7 @@ def handle_query(q):
         video = q.replace("play", "").replace("on youtube", "").strip()
         return play_youtube_video(video)
 
-    if "close window" in q:
+    if "close window" in q or "close current window" in q:
         return close_window()
 
     if "open command prompt" in q or "open cmd" in q:

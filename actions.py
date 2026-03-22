@@ -11,7 +11,7 @@ import getpass
 from speechfunctions import speak
 import re
 import cv2
-
+import pygetwindow as gw
 
 # ------------------ SYSTEM ACTIONS ------------------
 
@@ -66,6 +66,11 @@ def play_youtube_video(video_name):
 
 
 def close_window():
+    active = gw.getActiveWindow()
+    
+    if active and "Pixel" in active.title:
+        return "I won’t close myself."
+    
     pyautogui.hotkey("alt", "f4")
     return "Closing the current window."
 
