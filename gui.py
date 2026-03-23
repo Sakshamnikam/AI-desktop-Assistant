@@ -3,6 +3,8 @@ import customtkinter as ctk
 import threading
 from main import run_assistant, stop_assistant, handle_query
 from datetime import datetime
+from PIL import Image
+import os
 
 # ---------------- APP CONFIG ----------------
 ctk.set_appearance_mode("dark")
@@ -14,27 +16,14 @@ app.geometry("780x720")
 app.resizable(False, False)
 app.configure(fg_color="#0b0f14")
 
+# Window icon
+if os.path.exists("pixel_logo.ico"):
+    app.iconbitmap("pixel_logo.ico")
+
 assistant_listening = False
 glow_job = None
 glow_intensity = 100
 glow_direction = 1
-
-# ---------------- STATUS ----------------
-def set_status(text, color):
-    def update():
-        status_text.configure(text=text)
-        status_dot.configure(text_color=color)
-
-        if text == "Listening":
-            voice_btn.configure(fg_color="#16a34a")
-        elif text == "Recognizing":
-            voice_btn.configure(fg_color="#2563eb")
-        elif text == "Thinking":
-            voice_btn.configure(fg_color="#f59e0b")
-        else:
-            voice_btn.configure(fg_color="#334155")
-
-    app.after(0, update)
 
 # ---------------- HEADER ----------------
 header = ctk.CTkFrame(app, height=60, fg_color="#0b0f14")
@@ -43,19 +32,32 @@ header.pack(fill="x")
 left = ctk.CTkFrame(header, fg_color="transparent")
 left.pack(side="left", padx=14)
 
+# -------- LOGO --------
+if os.path.exists("pixel_logo.png"):
+    logo_image = ctk.CTkImage(
+        light_image=Image.open("pixel_logo.png"),
+        dark_image=Image.open("pixel_logo.png"),
+        size=(32, 32)
+    )
+    ctk.CTkLabel(left, image=logo_image, text="").pack(side="left", padx=(0, 10))
+
+text_frame = ctk.CTkFrame(left, fg_color="transparent")
+text_frame.pack(side="left")
+
 ctk.CTkLabel(
-    left,
+    text_frame,
     text="Pixel",
     font=("Segoe UI Semibold", 20)
 ).pack(anchor="w")
 
 ctk.CTkLabel(
-    left,
+    text_frame,
     text="AI Desktop Assistant",
     font=("Segoe UI", 11),
     text_color="#6b7280"
 ).pack(anchor="w")
 
+# -------- STATUS --------
 status_container = ctk.CTkFrame(header, fg_color="transparent")
 status_container.pack(side="right", padx=16)
 
@@ -73,6 +75,23 @@ status_text = ctk.CTkLabel(
     font=("Segoe UI", 12)
 )
 status_text.pack(side="left")
+
+# ---------------- STATUS FUNCTION ----------------
+def set_status(text, color):
+    def update():
+        status_text.configure(text=text)
+        status_dot.configure(text_color=color)
+
+        if text == "Listening":
+            voice_btn.configure(fg_color="#16a34a")
+        elif text == "Recognizing":
+            voice_btn.configure(fg_color="#2563eb")
+        elif text == "Thinking":
+            voice_btn.configure(fg_color="#f59e0b")
+        else:
+            voice_btn.configure(fg_color="#334155")
+
+    app.after(0, update)
 
 # ---------------- CHAT ----------------
 chat_frame = ctk.CTkScrollableFrame(
@@ -179,13 +198,14 @@ def animate_glow():
         glow_intensity = 80
         glow_direction = 1
 
-    # ✅ SAFE COLOR GENERATION
     color = "#{:02x}{:02x}{:02x}".format(0, glow_intensity, 0)
 
-    voice_btn.configure(border_color=color)
+    try:
+        voice_btn.configure(border_color=color)
+    except:
+        pass
 
     glow_job = app.after(30, animate_glow)
-
 
 # ---------------- VOICE ----------------
 def toggle_voice():
@@ -228,7 +248,6 @@ def toggle_voice():
         set_status("Idle", "#facc15")
         add_message("Assistant stopped.")
 
-
 # ---------------- CONTROLS ----------------
 controls = ctk.CTkFrame(app, fg_color="transparent")
 controls.pack(pady=10)
@@ -259,4 +278,3 @@ ctk.CTkButton(
 ).pack(side="left", padx=10)
 
 app.mainloop()
-
