@@ -33,10 +33,10 @@ def handle_query(q):
 
         # -------- VOLUME --------
         if any(p in q for p in ["increase volume", "volume up", "raise volume"]):
-            return increase_volume()
+             return increase_volume(q)
 
         if any(p in q for p in ["decrease volume", "volume down", "lower volume"]):
-            return decrease_volume()
+            return decrease_volume(q)
 
         if any(p in q for p in ["mute", "silence"]):
             return mute()
