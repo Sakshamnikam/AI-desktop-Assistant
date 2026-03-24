@@ -84,7 +84,7 @@ def open_youtube():
 def play_youtube_video(video_name):
     try:
         pywhatkit.playonyt(video_name)  # opens video
-        time.sleep(2)                   # wait for YouTube tab to load
+        time.sleep(0.8)                   # wait for YouTube tab to load
         pyautogui.press("space")        # auto-play the video
         return f"Playing {video_name} on YouTube."
     except Exception as e:
