@@ -6,7 +6,7 @@ import pygame
 import threading
 import uuid
 import os
-
+from config import recognizer
 
 engine = pyttsx3.init()
 engine.setProperty("rate", 185)
@@ -22,35 +22,30 @@ def speak(text):
 
     def _worker():
         try:
-            # Unique filename every time
-            file_name = f"tts_{uuid.uuid4().hex}.mp3"
+            import edge_tts
+            import asyncio
+            import tempfile
+            import pygame
+
+            async def generate():
+                tmp = tempfile.NamedTemporaryFile(delete=False, suffix=".mp3")
+                await edge_tts.Communicate(
+                    text,
+                    voice="en-GB-RyanNeural",
+                    rate="+15%"   # 🔥 faster speaking
+                ).save(tmp.name)
+                return tmp.name
 
             loop = asyncio.new_event_loop()
             asyncio.set_event_loop(loop)
-
-            communicate = edge_tts.Communicate(
-                text,
-                voice="en-GB-RyanNeural"
-            )
-
-            loop.run_until_complete(
-                communicate.save(file_name)
-            )
+            file_path = loop.run_until_complete(generate())
             loop.close()
 
-            # Stop previous playback
             if pygame.mixer.music.get_busy():
                 pygame.mixer.music.stop()
 
-            pygame.mixer.music.load(file_name)
+            pygame.mixer.music.load(file_path)
             pygame.mixer.music.play()
-
-            # Cleanup after playback
-            while pygame.mixer.music.get_busy():
-                pygame.time.Clock().tick(10)
-
-            pygame.mixer.music.unload()
-            os.remove(file_name)
 
         except Exception as e:
             print("TTS ERROR:", e)
@@ -59,11 +54,12 @@ def speak(text):
 
 # ---------------- LISTEN ---------------- #
 def listen() -> str:
-    r = sr.Recognizer()
+    r = recognizer 
     r.energy_threshold = 400
     r.dynamic_energy_threshold = True
-    r.pause_threshold = 1.5
+    r.pause_threshold = 1.0
     r.non_speaking_duration = 0.7
+    r.phrase_time_limit = 5
 
     with sr.Microphone() as source:
         print("Listening...")
