@@ -143,52 +143,54 @@ def set_timer(query):
 
 def create_file(query):
     q = query.lower()
-
-    # ---------------- 1. Detect location ----------------
     username = getpass.getuser()
 
+    # ---------------- 1. Detect location ----------------
     locations = {
         "desktop": f"C:\\Users\\{username}\\Desktop",
         "documents": f"C:\\Users\\{username}\\Documents",
         "downloads": f"C:\\Users\\{username}\\Downloads",
-        "c drive": "C:\\",
-        "d drive": "D:\\"
     }
 
     folder_path = None
-    for key, path in locations.items():
+    location_word = None
+
+    for key in locations:
         if key in q:
-            folder_path = path
-            q = q.replace(key, "")  # REMOVE location from sentence
+            folder_path = locations[key]
+            location_word = key
             break
 
-    # Default to Desktop
+    # Default → Desktop
     if not folder_path:
         folder_path = f"C:\\Users\\{username}\\Desktop"
 
-    # Prevent root C drive writing
-    if folder_path in ["C:\\", "D:\\"]:
-        return "For security reasons, files cannot be created directly in drive root."
+    # ---------------- 2. Extract filename smartly ----------------
+    # Split before location words like "on", "in"
+    name_part = re.split(r"\b(on|in)\b", q)[0]
 
-    # ---------------- 2. Extract filename ----------------
-    name = q.replace("create", "").replace("file", "").replace("named", "").replace("called", "")
+    # Remove filler words
+    name = re.sub(r"\b(create|make|new|file|named|called)\b", "", name_part)
+
+    # Clean unwanted characters
     name = name.strip()
-
-    # Remove invalid characters
     name = re.sub(r'[\\/:*?"<>|]', '', name)
 
+    # ---------------- 3. Validate filename ----------------
     if not name:
         return "Please specify a valid file name."
 
+    # Auto add .txt if no extension
     if "." not in name:
         name += ".txt"
 
-    # ---------------- 3. Create file ----------------
+    # ---------------- 4. Create file ----------------
     file_path = os.path.join(folder_path, name)
 
     try:
         with open(file_path, "w") as f:
             f.write("")
+
         return f"File '{name}' created successfully in {folder_path}."
 
     except Exception as e:
