@@ -111,9 +111,17 @@ def add_message(text, sender="pixel"):
     align = ctk.CTkFrame(row, fg_color="transparent")
     align.pack(anchor="e" if is_user else "w")
 
+    MAX_PREVIEW = 180
+    expanded = False
+
+    def get_display_text():
+        if expanded or len(text) <= MAX_PREVIEW:
+            return text
+        return text[:MAX_PREVIEW] + "..."
+
     bubble = ctk.CTkLabel(
         align,
-        text=text,
+        text=get_display_text(),
         wraplength=480,
         justify="left",
         font=("Segoe UI", 14),
@@ -123,6 +131,25 @@ def add_message(text, sender="pixel"):
         fg_color="#2563eb" if is_user else "#1f2937",
     )
     bubble.pack()
+
+    def toggle():
+        nonlocal expanded
+        expanded = not expanded
+        bubble.configure(text=get_display_text())
+        toggle_btn.configure(text="Less" if expanded else "More")
+
+    # 👉 Show button only if long message
+    if len(text) > MAX_PREVIEW:
+        toggle_btn = ctk.CTkButton(
+            align,
+            text="More",
+            width=60,
+            height=22,
+            font=("Segoe UI", 10),
+            fg_color="#374151",
+            command=toggle
+        )
+        toggle_btn.pack(anchor="w", pady=(2, 0))
 
     time_label = ctk.CTkLabel(
         align,
@@ -134,8 +161,7 @@ def add_message(text, sender="pixel"):
 
     chat_frame.update_idletasks()
     chat_frame._parent_canvas.yview_moveto(1.0)
-
-
+    
 add_message("Hi. I am Pixel. How can I assist you?")
 
 # ---------------- INPUT ----------------
