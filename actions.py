@@ -280,7 +280,47 @@ def open_folder(query):
 
     return f"I couldn't find any folder named {clean_q}."
 
+def create_folder(query):
+    q = query.lower()
+    username = getpass.getuser()
 
+    # ---------------- 1. Detect location ----------------
+    locations = {
+        "desktop": f"C:\\Users\\{username}\\Desktop",
+        "documents": f"C:\\Users\\{username}\\Documents",
+        "downloads": f"C:\\Users\\{username}\\Downloads",
+    }
+
+    folder_path = None
+
+    for key in locations:
+        if key in q:
+            folder_path = locations[key]
+            break
+
+    # Default → Desktop
+    if not folder_path:
+        folder_path = f"C:\\Users\\{username}\\Desktop"
+
+    # ---------------- 2. Extract folder name ----------------
+    name_part = re.split(r"\b(on|in)\b", q)[0]
+
+    name = re.sub(r"\b(create|make|new|folder|directory|named|called)\b", "", name_part)
+
+    name = name.strip()
+    name = re.sub(r'[\\/:*?"<>|]', '', name)
+
+    if not name:
+        return "Please specify a valid folder name."
+
+    # ---------------- 3. Create folder ----------------
+    full_path = os.path.join(folder_path, name)
+
+    try:
+        os.makedirs(full_path, exist_ok=True)
+        return f"Folder '{name}' created successfully in {folder_path}."
+    except Exception as e:
+        return f"Failed to create folder: {e}"
 
 def _camera_loop():
     cam = cv2.VideoCapture(0)

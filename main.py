@@ -93,7 +93,12 @@ def handle_query(q):
 
         if any(p in q for p in ["open camera", "start camera", "turn on camera"]):
             return open_camera()
-
+        
+        if any(p in q for p in ["create folder", "make folder", "new folder", "create directory"]):
+            return create_folder(q)
+        
+        if any(p in q for p in ["create folder", "make folder", "new folder", "create directory"]):
+            return create_folder(q)
         # -------- FALLBACK AI --------
         return ask_ai(q)
 
