@@ -1,3 +1,35 @@
+# =========================
+# PIXEL UI THEME
+# =========================
+
+COLORS = {
+    "bg": "#050816",
+    "surface": "#111827",
+    "surface2": "#1E293B",
+
+    "accent": "#00D9FF",
+    "accent_hover": "#00B8D9",
+
+    "success": "#22C55E",
+    "warning": "#FACC15",
+    "error": "#EF4444",
+
+    "text": "#F8FAFC",
+    "text_secondary": "#94A3B8",
+
+    "user_bubble": "#00D9FF",
+    "assistant_bubble": "#1E293B",
+
+    "input": "#0F172A"
+}
+
+FONTS = {
+    "title": ("Segoe UI Semibold", 22),
+    "subtitle": ("Segoe UI", 12),
+    "chat": ("Segoe UI", 14),
+    "status": ("Segoe UI", 11),
+    "button": ("Segoe UI Semibold", 13)
+}
 
 import customtkinter as ctk
 import threading
@@ -12,9 +44,9 @@ ctk.set_default_color_theme("blue")
 
 app = ctk.CTk()
 app.title("Pixel AI Assistant")
-app.geometry("780x720")
-app.resizable(False, False)
-app.configure(fg_color="#0b0f14")
+app.geometry("900x760")
+app.minsize(850, 700)
+app.configure(fg_color=COLORS["bg"])
 
 # Window icon
 if os.path.exists("pixel_logo.ico"):
@@ -26,7 +58,7 @@ glow_intensity = 100
 glow_direction = 1
 
 # ---------------- HEADER ----------------
-header = ctk.CTkFrame(app, height=60, fg_color="#0b0f14")
+header = ctk.CTkFrame(app, height=60, fg_color=COLORS["bg"])
 header.pack(fill="x")
 
 left = ctk.CTkFrame(header, fg_color="transparent")
@@ -47,14 +79,15 @@ text_frame.pack(side="left")
 ctk.CTkLabel(
     text_frame,
     text="Pixel",
-    font=("Segoe UI Semibold", 20)
+    font=FONTS["title"],
+    text_color=COLORS["text"]
 ).pack(anchor="w")
 
 ctk.CTkLabel(
     text_frame,
     text="AI Desktop Assistant",
-    font=("Segoe UI", 11),
-    text_color="#6b7280"
+    font=FONTS["subtitle"],
+    text_color=COLORS["text_secondary"]
 ).pack(anchor="w")
 
 # -------- STATUS --------
@@ -77,27 +110,46 @@ status_text = ctk.CTkLabel(
 status_text.pack(side="left")
 
 # ---------------- STATUS FUNCTION ----------------
-def set_status(text, color):
+def set_status(text, color=None):
     def update():
         status_text.configure(text=text)
-        status_dot.configure(text_color=color)
 
+        # Automatic theme colors
         if text == "Listening":
-            voice_btn.configure(fg_color="#16a34a")
+            dot_color = COLORS["success"]
+            btn_color = COLORS["success"]
+
         elif text == "Recognizing":
-            voice_btn.configure(fg_color="#2563eb")
+            dot_color = COLORS["accent"]
+            btn_color = COLORS["accent"]
+
         elif text == "Thinking":
-            voice_btn.configure(fg_color="#f59e0b")
-        else:
-            voice_btn.configure(fg_color="#334155")
+            dot_color = COLORS["warning"]
+            btn_color = COLORS["warning"]
+
+        elif text == "Error":
+            dot_color = COLORS["error"]
+            btn_color = COLORS["error"]
+
+        else:  # Idle
+            dot_color = COLORS["warning"]
+            btn_color = COLORS["surface2"]
+
+        # If a custom color is supplied, use it (backward compatibility)
+        if color is not None:
+            dot_color = color
+
+        status_dot.configure(text_color=dot_color)
+        voice_btn.configure(fg_color=btn_color)
 
     app.after(0, update)
 
 # ---------------- CHAT ----------------
 chat_frame = ctk.CTkScrollableFrame(
     app,
-    fg_color="#111827",
-    corner_radius=12
+    fg_color=COLORS["input"],
+    corner_radius=18,
+    border_width=0
 )
 chat_frame.pack(fill="both", expand=True, padx=12, pady=(10, 8))
 
@@ -124,11 +176,14 @@ def add_message(text, sender="pixel"):
         text=get_display_text(),
         wraplength=480,
         justify="left",
-        font=("Segoe UI", 14),
-        corner_radius=16,
-        padx=14,
-        pady=10,
-        fg_color="#2563eb" if is_user else "#1f2937",
+        corner_radius=20,
+        font=FONTS["chat"],
+        text_color=COLORS["text"],
+        fg_color=(
+        COLORS["user_bubble"]
+        if is_user
+        else COLORS["assistant_bubble"]
+)
     )
     bubble.pack()
 
@@ -171,9 +226,9 @@ input_frame.pack(fill="x", padx=12, pady=(4, 6))
 user_entry = ctk.CTkEntry(
     input_frame,
     placeholder_text="Type your message...",
-    height=42,
+    height=48,
     font=("Segoe UI", 14),
-    fg_color="#111827",
+    fg_color=COLORS["surface"]
 )
 user_entry.pack(side="left", fill="x", expand=True, padx=(0, 8))
 
@@ -204,7 +259,11 @@ ctk.CTkButton(
     text="Send",
     width=90,
     height=42,
-    fg_color="#2563eb",
+    fg_color=COLORS["accent"],
+    hover_color=COLORS["accent_hover"],
+    text_color="#050816",
+    corner_radius=16,
+    font=FONTS["button"],
     command=send_message
 ).pack(side="right")
 
@@ -281,8 +340,12 @@ controls.pack(pady=10)
 voice_btn = ctk.CTkButton(
     controls,
     text="Start Listening",
-    width=220,
-    height=50,
+    width=240,
+    height=56,
+    corner_radius=18,
+    font=FONTS["button"],
+    fg_color=COLORS["surface2"],
+    hover_color="#334155",
     command=toggle_voice
 )
 voice_btn.pack(side="left", padx=10)
