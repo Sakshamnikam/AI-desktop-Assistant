@@ -174,7 +174,7 @@ Say:
 ## 🧠 AI Configuration
 
 * **Provider:** Groq
-* **Model:** LLaMA 3.3 70B Versatile
+* **Model:** OpenAI GPT-OSS 120B
 * **Response Style:**
 
   * Short, precise
