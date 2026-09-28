@@ -10,7 +10,7 @@
 
 * 🎙️ Voice recognition
 * 🔊 Natural text-to-speech
-* 🧠 AI-powered conversation (Groq LLaMA 3.3 70B)
+* 🧠 AI-powered conversation (OpenAI GPT-OSS 120B)
 * 🖥️ Direct system control
 
 All wrapped inside a modern **CustomTkinter GUI**.
@@ -49,7 +49,7 @@ Control your system hands-free:
 
 ### 🧠 AI Assistant (Fallback Engine)
 
-* Powered by **Groq LLaMA 3.3 70B**
+* Powered by **OpenAI GPT-OSS 120B**
 * Maintains short-term conversation memory
 * Handles:
 
@@ -102,7 +102,7 @@ AI_desktop_Assistant/
 * **Speech Recognition:** SpeechRecognition (Google API)
 * **Text-to-Speech:** Edge-TTS + Pygame
 * **Automation:** PyAutoGUI
-* **AI Engine:** Groq (LLaMA 3.3 70B)
+* **AI Engine:** OpenAI GPT-OSS 120B
 * **Media & Tools:** OpenCV, PyWhatKit
 
 ---
